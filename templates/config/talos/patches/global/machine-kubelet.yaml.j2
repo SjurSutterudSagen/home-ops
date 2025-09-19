@@ -4,4 +4,8 @@ machine:
       serializeImagePulls: false
     nodeIP:
       validSubnets:
+        #% if dual_network_enabled %#
+        - #{ cluster_cidr }#
+        #% else %#
         - #{ node_cidr }#
+        #% endif %#

@@ -138,6 +138,13 @@ class Plugin(makejinja.plugin.Plugin):
         data.setdefault('repository_visibility', 'public')
         data.setdefault('cilium_loadbalancer_mode', 'dsr')
 
+        # Set defaults for dual-network configuration
+        if data.get('cluster_cidr'):
+            data.setdefault('cluster_default_gateway', nthhost(data.get('cluster_cidr'), 1))
+            data.setdefault('dual_network_enabled', True)
+        else:
+            data.setdefault('dual_network_enabled', False)
+
         # If all BGP keys are set, enable BGP
         bgp_keys = ['cilium_bgp_router_addr', 'cilium_bgp_router_asn', 'cilium_bgp_node_asn']
         bgp_enabled = all(data.get(key) for key in bgp_keys)

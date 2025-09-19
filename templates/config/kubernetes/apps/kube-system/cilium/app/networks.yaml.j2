@@ -7,7 +7,11 @@ metadata:
 spec:
   allowFirstLastIPs: "No"
   blocks:
+    #% if dual_network_enabled %#
+    - cidr: "#{ cluster_cidr }#"
+    #% else %#
     - cidr: "#{ node_cidr }#"
+    #% endif %#
 ---
 # yaml-language-server: $schema=https://datreeio.github.io/CRDs-catalog/cilium.io/ciliuml2announcementpolicy_v2alpha1.json
 apiVersion: cilium.io/v2alpha1
@@ -16,10 +20,17 @@ metadata:
   name: l2-policy
 spec:
   loadBalancerIPs: true
+  #% if dual_network_enabled %#
+  # NOTE: interfaces might need to be set to match your cluster network interface names
+  # interfaces:
+  #   - ^eno[0-9]+
+  #   - ^eth[0-9]+
+  #% else %#
   # NOTE: interfaces might need to be set if you have more than one active NIC on your hosts
   # interfaces:
   #   - ^eno[0-9]+
   #   - ^eth[0-9]+
+  #% endif %#
   nodeSelector:
     matchLabels:
       kubernetes.io/os: linux

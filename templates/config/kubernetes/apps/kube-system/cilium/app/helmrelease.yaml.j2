@@ -33,8 +33,15 @@ spec:
       automount:
         enabled: false
       hostRoot: /sys/fs/cgroup
+    #% if dual_network_enabled %#
+    # Specify cluster network devices for dual-network setup
+    # WARNING: Adjust these device patterns to match your EXACT cluster network interfaces
+    # TODO: Replace with your actual cluster network interface patterns
+    # devices: eth1+ eno2+ enp2s+
+    #% else %#
     # NOTE: devices might need to be set if you have more than one active NIC on your hosts
     # devices: eno+ eth+
+    #% endif %#
     dashboards:
       enabled: true
     endpointRoutes:
@@ -50,7 +57,11 @@ spec:
       enabled: false
     ipam:
       mode: kubernetes
-    ipv4NativeRoutingCIDR: "#{ cluster_pod_cidr }#"
+    #% if dual_network_enabled %#
+    ipv4NativeRoutingCIDR: "#{ cluster_cidr }#"
+    #% else %#
+    ipv4NativeRoutingCIDR: "#{ node_cidr }#"
+    #% endif %#
     k8sServiceHost: 127.0.0.1
     k8sServicePort: 7445
     kubeProxyReplacement: true

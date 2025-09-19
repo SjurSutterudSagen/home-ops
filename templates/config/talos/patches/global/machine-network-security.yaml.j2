@@ -1,0 +1,37 @@
+#% if dual_network_enabled %#
+machine:
+  network:
+    # Network security configurations for dual-network setup
+    kubespan:
+      enabled: false  # Disable KubeSpan as we have dedicated cluster network
+    extraHostEntries:
+      # Ensure proper hostname resolution within cluster network
+      #% for node in nodes %#
+      #% if node.cluster_address %#
+      - ip: "#{ node.cluster_address }#"
+        aliases:
+          - "#{ node.name }#.cluster.local"
+      #% endif %#
+      #% endfor %#
+    # Disable unnecessary network services on cluster interface
+    disableSearchDomain: true
+  # System security hardening
+  sysctls:
+    # Network security hardening
+    net.ipv4.conf.all.accept_redirects: "0"
+    net.ipv4.conf.all.secure_redirects: "0"
+    net.ipv4.conf.all.send_redirects: "0"
+    net.ipv4.conf.all.accept_source_route: "0"
+    net.ipv4.conf.all.log_martians: "1"
+    net.ipv4.conf.default.accept_redirects: "0"
+    net.ipv4.conf.default.secure_redirects: "0"
+    net.ipv4.conf.default.send_redirects: "0"
+    net.ipv4.conf.default.accept_source_route: "0"
+    net.ipv4.conf.default.log_martians: "1"
+    # Prevent IP spoofing
+    net.ipv4.conf.all.rp_filter: "1"
+    net.ipv4.conf.default.rp_filter: "1"
+    # Additional security for cluster network
+    net.ipv4.ip_forward: "1"
+    net.bridge.bridge-nf-call-iptables: "1"
+#% endif %#

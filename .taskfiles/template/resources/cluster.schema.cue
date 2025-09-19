@@ -6,12 +6,14 @@ import (
 
 #Config: {
 	node_cidr: net.IPCIDR & !=cluster_pod_cidr & !=cluster_svc_cidr
+	cluster_cidr?: net.IPCIDR & !=node_cidr & !=cluster_pod_cidr & !=cluster_svc_cidr
 	node_dns_servers?: [...net.IPv4]
 	node_ntp_servers?: [...net.IPv4]
 	node_default_gateway?: net.IPv4 & !=""
+	cluster_default_gateway?: net.IPv4 & !=""
 	node_vlan_tag?: string & !=""
-	cluster_pod_cidr: *"10.42.0.0/16" | net.IPCIDR & !=node_cidr & !=cluster_svc_cidr
-	cluster_svc_cidr: *"10.43.0.0/16" | net.IPCIDR & !=node_cidr & !=cluster_pod_cidr
+	cluster_pod_cidr: *"10.42.0.0/16" | net.IPCIDR & !=node_cidr & !=cluster_svc_cidr & (cluster_cidr != _|_ ? !=cluster_cidr : true)
+	cluster_svc_cidr: *"10.43.0.0/16" | net.IPCIDR & !=node_cidr & !=cluster_pod_cidr & (cluster_cidr != _|_ ? !=cluster_cidr : true)
 	cluster_api_addr: net.IPv4
 	cluster_api_tls_sans?: [...net.FQDN]
 	cluster_gateway_addr: net.IPv4 & !=cluster_api_addr & !=cluster_dns_gateway_addr & !=cloudflare_gateway_addr

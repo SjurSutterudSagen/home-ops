@@ -16,6 +16,7 @@ A Kubernetes cluster deployed with [Talos Linux](https://github.com/siderolabs/t
 
 - **Required:** Some knowledge of [Containers](https://opencontainers.org/), [YAML](https://noyaml.com/), [Git](https://git-scm.com/), and a **Cloudflare account** with a **domain**.
 - **Included components:** [flux](https://github.com/fluxcd/flux2), [cilium](https://github.com/cilium/cilium), [cert-manager](https://github.com/cert-manager/cert-manager), [spegel](https://github.com/spegel-org/spegel), [reloader](https://github.com/stakater/Reloader), [external-dns](https://github.com/kubernetes-sigs/external-dns) and [cloudflared](https://github.com/cloudflare/cloudflared).
+- **Dual-network support:** Optional configuration for high-speed cluster networks with separate external access.
 
 **Other features include:**
 
@@ -25,6 +26,9 @@ A Kubernetes cluster deployed with [Talos Linux](https://github.com/siderolabs/t
 - Flux `HelmRelease` and `Kustomization` diffs w/ [flux-local](https://github.com/allenporter/flux-local)
 
 Does this sound cool to you? If so, continue to read on! 👇
+
+> [!TIP]
+> **High-Performance Setup:** If you have high-speed direct connections between your nodes, check out the [Dual Network Setup Guide](./DUAL-NETWORK-SETUP.md) for optimal performance configuration.
 
 ## 🚀 Let's Go!
 

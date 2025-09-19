@@ -36,6 +36,7 @@ nodes:
     talosImageURL: factory.talos.dev/installer#{ "-secureboot" if item.secureboot | default(false, true) }#/#{ item.schematic_id }#
     controlPlane: #{ (item.controller) | string | lower }#
     networkInterfaces:
+      # External/Management Network Interface
       - deviceSelector:
           hardwareAddr: "#{ item.mac_addr | lower }#"
         #% if node_vlan_tag %#
@@ -47,10 +48,6 @@ nodes:
             routes:
               - network: "0.0.0.0/0"
                 gateway: "#{ node_default_gateway }#"
-            #% if item.controller %#
-            vip:
-              ip: "#{ cluster_api_addr }#"
-            #% endif %#
         #% else %#
         dhcp: false
         addresses:
@@ -59,11 +56,29 @@ nodes:
           - network: "0.0.0.0/0"
             gateway: "#{ node_default_gateway }#"
         mtu: #{ item.mtu | default(1500, true) }#
+        #% endif %#
+      #% if dual_network_enabled and item.cluster_mac_addr %#
+      # Cluster Network Interface (High-speed direct connections)
+      - deviceSelector:
+          hardwareAddr: "#{ item.cluster_mac_addr | lower }#"
+        dhcp: false
+        addresses:
+          - "#{ item.cluster_address }#/#{ cluster_cidr.split('/') | last }#"
+        mtu: #{ item.cluster_mtu | default(1500, true) }#
         #% if item.controller %#
         vip:
           ip: "#{ cluster_api_addr }#"
         #% endif %#
+      #% elif item.controller %#
+      # VIP on external interface if no cluster network
+        #% if node_vlan_tag %#
+            vip:
+              ip: "#{ cluster_api_addr }#"
+        #% else %#
+        vip:
+          ip: "#{ cluster_api_addr }#"
         #% endif %#
+      #% endif %#
     #% if talos_patches('%s' % (item.name)) | length == 0 %#
     #% if item.encrypt_disk | default(false, true) %#
     patches:

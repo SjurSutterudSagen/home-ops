@@ -1,7 +1,11 @@
 ---
-# -- The network CIDR for the nodes.
+# -- The network CIDR for external nodes (slower ethernet with internet access).
 # (REQUIRED) / (e.g. 192.168.1.0/24)
 node_cidr: ""
+
+# -- The network CIDR for cluster nodes (high-speed direct connections).
+# (OPTIONAL) / (e.g. 10.0.0.0/24) / (NOTE: If not set, cluster will use node_cidr for both external and cluster traffic)
+# cluster_cidr: ""
 
 # -- DNS servers to use for the cluster.
 #    (OPTIONAL) / (DEFAULT: ["1.1.1.1", "1.0.0.1"]) / (Cloudflare DNS)
@@ -11,16 +15,20 @@ node_cidr: ""
 #    (OPTIONAL) / (DEFAULT: ["162.159.200.1", "162.159.200.123"]) / (Cloudflare NTP)
 # node_ntp_servers: []
 
-# -- The default gateway for the nodes.
+# -- The default gateway for the nodes (external network).
 #    (OPTIONAL) / (DEFAULT: the first IP in the node_cidr)
 # node_default_gateway: ""
+
+# -- The default gateway for the cluster network (if using cluster_cidr).
+#    (OPTIONAL) / (DEFAULT: the first IP in the cluster_cidr)
+# cluster_default_gateway: ""
 
 # -- Attach a vlan tag to the Talos nodes. Not needed if ports on your switch are tagged or you are not using VLANs.
 #    (OPTIONAL) / (REF: https://www.talos.dev/latest/advanced/advanced-networking/#vlans)
 # node_vlan_tag: ""
 
-# -- The IP address of the Kube API.
-#    (REQUIRED) / (NOTE: Choose an unused IP in node_cidr)
+# -- The IP address of the Kube API (will be placed on cluster network if available, otherwise node network).
+#    (REQUIRED) / (NOTE: Choose an unused IP in cluster_cidr if using dual networks, otherwise node_cidr)
 cluster_api_addr: ""
 
 # -- Additional SANs to add to the Kube API cert. This is useful if you want to call the Kube API by hostname rather than IP
@@ -36,11 +44,11 @@ cluster_api_addr: ""
 # cluster_svc_cidr: ""
 
 # -- The Load balancer IP for k8s_gateway, this provides DNS to all your gateways when split DNS is configured on your internal DNS server (Dnsmasq, Pi-hole, etc)
-#    (REQUIRED) / (NOTE: Choose an unused IP in node_cidr)
+#    (REQUIRED) / (NOTE: Choose an unused IP in cluster_cidr if using dual networks, otherwise node_cidr)
 cluster_dns_gateway_addr: ""
 
 # -- The Load balancer IP for the internal gateway
-#    (REQUIRED) / (NOTE: Choose an unused IP in node_cidr)
+#    (REQUIRED) / (NOTE: Choose an unused IP in cluster_cidr if using dual networks, otherwise node_cidr)
 cluster_gateway_addr: ""
 
 # -- GitHub repository
