@@ -145,6 +145,13 @@ class Plugin(makejinja.plugin.Plugin):
         else:
             data.setdefault('dual_network_enabled', False)
 
+        # Enable external Cloudflare features only if configured
+        cloudflare_enabled = bool(data.get('cloudflare_domain') and data.get('cloudflare_token'))
+        data.setdefault('cloudflare_enabled', cloudflare_enabled)
+
+        # Set the primary domain (local or cloudflare)
+        data.setdefault('primary_domain', data.get('cloudflare_domain') or data.get('local_domain'))
+
         # If all BGP keys are set, enable BGP
         bgp_keys = ['cilium_bgp_router_addr', 'cilium_bgp_router_asn', 'cilium_bgp_node_asn']
         bgp_enabled = all(data.get(key) for key in bgp_keys)

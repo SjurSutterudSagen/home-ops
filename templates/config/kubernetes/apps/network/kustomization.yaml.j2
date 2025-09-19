@@ -6,6 +6,8 @@ namespace: network
 components:
   - ../../components/common
 resources:
+  #% if cloudflare_enabled %#
   - ./cloudflare-dns/ks.yaml
   - ./cloudflare-tunnel/ks.yaml
+  #% endif %#
   - ./k8s-gateway/ks.yaml

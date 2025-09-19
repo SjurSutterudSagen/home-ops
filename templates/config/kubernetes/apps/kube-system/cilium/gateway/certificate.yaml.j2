@@ -7,7 +7,11 @@ metadata:
 spec:
   secretName: "${SECRET_DOMAIN/./-}-production-tls"
   issuerRef:
+    #% if cloudflare_enabled %#
     name: letsencrypt-production
+    #% else %#
+    name: selfsigned-production
+    #% endif %#
     kind: ClusterIssuer
   commonName: "${SECRET_DOMAIN}"
   dnsNames: ["${SECRET_DOMAIN}", "*.${SECRET_DOMAIN}"]

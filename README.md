@@ -14,8 +14,9 @@ With this approach, you'll gain a solid foundation to build and manage your Kube
 
 A Kubernetes cluster deployed with [Talos Linux](https://github.com/siderolabs/talos) and an opinionated implementation of [Flux](https://github.com/fluxcd/flux2) using [GitHub](https://github.com/) as the Git provider, [sops](https://github.com/getsops/sops) to manage secrets and [cloudflared](https://github.com/cloudflare/cloudflared) to access applications external to your local network.
 
-- **Required:** Some knowledge of [Containers](https://opencontainers.org/), [YAML](https://noyaml.com/), [Git](https://git-scm.com/), and a **Cloudflare account** with a **domain**.
-- **Included components:** [flux](https://github.com/fluxcd/flux2), [cilium](https://github.com/cilium/cilium), [cert-manager](https://github.com/cert-manager/cert-manager), [spegel](https://github.com/spegel-org/spegel), [reloader](https://github.com/stakater/Reloader), [external-dns](https://github.com/kubernetes-sigs/external-dns) and [cloudflared](https://github.com/cloudflare/cloudflared).
+- **Required:** Some knowledge of [Containers](https://opencontainers.org/), [YAML](https://noyaml.com/), [Git](https://git-scm.com/).
+- **Optional:** Cloudflare account with domain for external access (can be added later).
+- **Included components:** [flux](https://github.com/fluxcd/flux2), [cilium](https://github.com/cilium/cilium), [cert-manager](https://github.com/cert-manager/cert-manager), [spegel](https://github.com/spegel-org/spegel), [reloader](https://github.com/stakater/Reloader), and optionally [external-dns](https://github.com/kubernetes-sigs/external-dns) and [cloudflared](https://github.com/cloudflare/cloudflared).
 - **Dual-network support:** Optional configuration for high-speed cluster networks with separate external access.
 
 **Other features include:**
@@ -29,6 +30,9 @@ Does this sound cool to you? If so, continue to read on! 👇
 
 > [!TIP]
 > **High-Performance Setup:** If you have high-speed direct connections between your nodes, check out the [Dual Network Setup Guide](./DUAL-NETWORK-SETUP.md) for optimal performance configuration.
+
+> [!TIP]
+> **Local-Only Setup:** Want to run locally without external Cloudflare access? Check out the [Local Setup Guide](./LOCAL-SETUP-GUIDE.md) for a simplified configuration.
 
 ## 🚀 Let's Go!
 
