@@ -1,0 +1,37 @@
+machine:
+  network:
+    # Network security configurations for dual-network setup
+    kubespan:
+      enabled: false  # Disable KubeSpan as we have dedicated cluster network
+    extraHostEntries:
+      # Ensure proper hostname resolution within cluster network
+      - ip: "10.0.0.10"
+        aliases:
+          - "node-1.cluster.local"
+      - ip: "10.0.0.11"
+        aliases:
+          - "node-2.cluster.local"
+      - ip: "10.0.0.12"
+        aliases:
+          - "node-3.cluster.local"
+    # Disable unnecessary network services on cluster interface
+    disableSearchDomain: true
+  # System security hardening
+  sysctls:
+    # Network security hardening
+    net.ipv4.conf.all.accept_redirects: "0"
+    net.ipv4.conf.all.secure_redirects: "0"
+    net.ipv4.conf.all.send_redirects: "0"
+    net.ipv4.conf.all.accept_source_route: "0"
+    net.ipv4.conf.all.log_martians: "1"
+    net.ipv4.conf.default.accept_redirects: "0"
+    net.ipv4.conf.default.secure_redirects: "0"
+    net.ipv4.conf.default.send_redirects: "0"
+    net.ipv4.conf.default.accept_source_route: "0"
+    net.ipv4.conf.default.log_martians: "1"
+    # Prevent IP spoofing
+    net.ipv4.conf.all.rp_filter: "1"
+    net.ipv4.conf.default.rp_filter: "1"
+    # Additional security for cluster network
+    net.ipv4.ip_forward: "1"
+    net.bridge.bridge-nf-call-iptables: "1"

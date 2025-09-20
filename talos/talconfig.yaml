@@ -1,0 +1,145 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/budimanjojo/talhelper/master/pkg/config/schemas/talconfig.json
+---
+clusterName: kubernetes
+
+talosVersion: "${talosVersion}"
+kubernetesVersion: "${kubernetesVersion}"
+
+endpoint: https://10.0.0.100:6443
+additionalApiServerCertSans: &sans
+  - "127.0.0.1"
+  - "10.0.0.100"
+additionalMachineCertSans: *sans
+
+clusterPodNets: ["10.42.0.0/16"]
+clusterSvcNets: ["10.43.0.0/16"]
+
+# Disable built-in CNI to use Cilium
+cniConfig:
+  name: none
+
+nodes:
+  - hostname: "node-1"
+    ipAddress: "192.168.50.221"
+    installDisk: "/dev/nvme0n1"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/installer/d7ac6f8bf696ad8ca40877847b2343ec202daab66e2dac8549e74b18cf6759ae
+    controlPlane: true
+    networkInterfaces:
+      # Bond for external network - combines multiple external interfaces for redundancy
+      - interface: bond-external
+        bond:
+          mode: active-backup  # Failover mode - only one interface active at a time
+          miimon: 100          # Monitor link every 100ms
+          deviceSelectors:
+            - hardwareAddr: "a8:b8:e0:06:cc:7e"
+            - hardwareAddr: "a8:b8:e0:06:cc:7f"
+        dhcp: false
+        addresses:
+          - "192.168.50.221/24"
+        routes:
+          - network: "0.0.0.0/0"
+            gateway: "192.168.50.1"
+        mtu: 1500
+      # Bridge for cluster network - combines multiple direct connections
+      - interface: br-cluster
+        bridge:
+          stp:
+            enabled: false
+          deviceSelectors:
+            - hardwareAddr: "a8:b8:e0:06:cc:7c"
+            - hardwareAddr: "a8:b8:e0:06:cc:7d"
+        addresses:
+          - "10.0.0.10/24"
+        mtu: 1500
+        vip:
+          ip: "10.0.0.100"
+  - hostname: "node-2"
+    ipAddress: "192.168.50.222"
+    installDisk: "/dev/nvme0n1"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/installer/d7ac6f8bf696ad8ca40877847b2343ec202daab66e2dac8549e74b18cf6759ae
+    controlPlane: true
+    networkInterfaces:
+      # Bond for external network - combines multiple external interfaces for redundancy
+      - interface: bond-external
+        bond:
+          mode: active-backup  # Failover mode - only one interface active at a time
+          miimon: 100          # Monitor link every 100ms
+          deviceSelectors:
+            - hardwareAddr: "a8:b8:e0:06:cd:46"
+            - hardwareAddr: "a8:b8:e0:06:cd:47"
+        dhcp: false
+        addresses:
+          - "192.168.50.222/24"
+        routes:
+          - network: "0.0.0.0/0"
+            gateway: "192.168.50.1"
+        mtu: 1500
+      # Bridge for cluster network - combines multiple direct connections
+      - interface: br-cluster
+        bridge:
+          stp:
+            enabled: false
+          deviceSelectors:
+            - hardwareAddr: "a8:b8:e0:06:cd:44"
+            - hardwareAddr: "a8:b8:e0:06:cd:45"
+        addresses:
+          - "10.0.0.11/24"
+        mtu: 1500
+        vip:
+          ip: "10.0.0.100"
+  - hostname: "node-3"
+    ipAddress: "192.168.50.223"
+    installDisk: "/dev/nvme0n1"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/installer/d7ac6f8bf696ad8ca40877847b2343ec202daab66e2dac8549e74b18cf6759ae
+    controlPlane: true
+    networkInterfaces:
+      # Bond for external network - combines multiple external interfaces for redundancy
+      - interface: bond-external
+        bond:
+          mode: active-backup  # Failover mode - only one interface active at a time
+          miimon: 100          # Monitor link every 100ms
+          deviceSelectors:
+            - hardwareAddr: "a8:b8:e0:06:cc:4e"
+            - hardwareAddr: "a8:b8:e0:06:cc:4f"
+        dhcp: false
+        addresses:
+          - "192.168.50.223/24"
+        routes:
+          - network: "0.0.0.0/0"
+            gateway: "192.168.50.1"
+        mtu: 1500
+      # Bridge for cluster network - combines multiple direct connections
+      - interface: br-cluster
+        bridge:
+          stp:
+            enabled: false
+          deviceSelectors:
+            - hardwareAddr: "a8:b8:e0:06:cc:4c"
+            - hardwareAddr: "a8:b8:e0:06:cc:4d"
+        addresses:
+          - "10.0.0.12/24"
+        mtu: 1500
+        vip:
+          ip: "10.0.0.100"
+
+# Global patches
+patches:
+  - "@./patches/global/machine-files.yaml"
+  - "@./patches/global/machine-kubelet.yaml"
+  - "@./patches/global/machine-network-security.yaml"
+  - "@./patches/global/machine-network.yaml"
+  - "@./patches/global/machine-sysctls.yaml"
+  - "@./patches/global/machine-time.yaml"
+
+# Controller patches
+controlPlane:
+  patches:
+    - "@./patches/controller/admission-controller-patch.yaml"
+    - "@./patches/controller/cluster.yaml"
+
