@@ -95,6 +95,13 @@ nodes:
         #% endif %#
       #% endif %#
       #% if dual_network_enabled %#
+        #% set cluster_interfaces = [] %#
+        #% for i in range(1, 10) %#
+          #% set interface_attr = 'cluster_interface_' ~ i %#
+          #% if item.get(interface_attr) %#
+            #% set _ = cluster_interfaces.append(item[interface_attr]) %#
+          #% endif %#
+        #% endfor %#
         #% set cluster_mac_addresses = [] %#
         #% for i in range(1, 10) %#
           #% set mac_attr = 'cluster_mac_addr_' ~ i %#
@@ -102,7 +109,7 @@ nodes:
             #% set _ = cluster_mac_addresses.append((i, item[mac_attr])) %#
           #% endif %#
         #% endfor %#
-        #% if item.cluster_mac_addr and not cluster_mac_addresses %#
+        #% if item.cluster_interface and not cluster_interfaces %#
       # Cluster Network Interface (High-speed direct connections) - Single interface mode
       - deviceSelector:
           hardwareAddr: "#{ item.cluster_mac_addr | lower }#"
@@ -114,16 +121,16 @@ nodes:
         vip:
           ip: "#{ cluster_api_addr }#"
         #% endif %#
-        #% elif cluster_mac_addresses %#
+        #% elif cluster_interfaces %#
       # Bridge for cluster network - combines multiple direct connections
       - interface: br-cluster
         bridge:
           stp:
             enabled: false
           interfaces:
-          #% for i, mac_addr in cluster_mac_addresses %#
-            - cluster-nic#{ i }#
-          #% endfor %#
+            #% for interface_name in cluster_interfaces %#
+            - "#{ interface_name }#"
+            #% endfor %#
         addresses:
           - "#{ item.cluster_address }#/#{ cluster_cidr.split('/') | last }#"
         mtu: #{ item.cluster_mtu | default(1500, true) }#
@@ -131,12 +138,35 @@ nodes:
         vip:
           ip: "#{ cluster_api_addr }#"
         #% endif %#
-      #% for i, mac_addr in cluster_mac_addresses %#
-      # Cluster network interface #{ i }#
-      - interface: cluster-nic#{ i }#
-        deviceSelector:
-          hardwareAddr: "#{ mac_addr | lower }#"
-      #% endfor %#
+        #% elif item.cluster_mac_addr and not cluster_mac_addresses %#
+      # Cluster Network Interface (High-speed direct connections) - Single interface mode (legacy)
+      - deviceSelector:
+          hardwareAddr: "#{ item.cluster_mac_addr | lower }#"
+        dhcp: false
+        addresses:
+          - "#{ item.cluster_address }#/#{ cluster_cidr.split('/') | last }#"
+        mtu: #{ item.cluster_mtu | default(1500, true) }#
+        #% if item.controller %#
+        vip:
+          ip: "#{ cluster_api_addr }#"
+        #% endif %#
+        #% elif cluster_mac_addresses %#
+      # Bridge for cluster network - combines multiple direct connections (legacy fallback)
+      - interface: br-cluster
+        bridge:
+          stp:
+            enabled: false
+          interfaces:
+            #% for i, mac_addr in cluster_mac_addresses %#
+            - "enp1s0f#{ i - 1 }#"
+            #% endfor %#
+        addresses:
+          - "#{ item.cluster_address }#/#{ cluster_cidr.split('/') | last }#"
+        mtu: #{ item.cluster_mtu | default(1500, true) }#
+        #% if item.controller %#
+        vip:
+          ip: "#{ cluster_api_addr }#"
+        #% endif %#
         #% endif %#
       #% elif item.controller %#
       # VIP on external interface if no cluster network

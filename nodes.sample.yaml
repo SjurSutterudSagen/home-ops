@@ -13,6 +13,8 @@
 # - Multiple: Use 'cluster_mac_addr_1', 'cluster_mac_addr_2', etc. for multiple cluster interfaces
 #   - Creates bridge combining all cluster interfaces
 #   - Supports mesh topologies with direct connections between nodes
+#   - Use 'cluster_interface_1', 'cluster_interface_2', etc. to specify interface names
+#   - Interface names are typically enp1s0f0, enp1s0f1, etc. (use: talosctl get links -n <ip> --insecure)
 #
 # CONFIGURATION EXAMPLES:
 # Traditional setup: mac_addr + cluster_mac_addr
@@ -51,6 +53,8 @@ nodes: []
   #   mac_addr: "aa:bb:cc:dd:ee:04"    # Single external interface
   #   cluster_mac_addr_1: "aa:bb:cc:dd:ee:13" # Cluster interface 1 (direct to node-1)
   #   cluster_mac_addr_2: "aa:bb:cc:dd:ee:14" # Cluster interface 2 (direct to node-2)
+  #   cluster_interface_1: "enp1s0f0"  # Interface name for cluster_mac_addr_1
+  #   cluster_interface_2: "enp1s0f1"  # Interface name for cluster_mac_addr_2
   #   schematic_id: "your-schematic-id" talosctl get extensions -n 192.168.1.12 --insecure
 
   # Example 4: Full redundancy mode (bonded external + bridged cluster)
@@ -63,6 +67,8 @@ nodes: []
   #   mac_addr_2: "aa:bb:cc:dd:ee:06"  # External NIC 2 (bonded)
   #   cluster_mac_addr_1: "aa:bb:cc:dd:ee:15" # Cluster interface 1 (bridged)
   #   cluster_mac_addr_2: "aa:bb:cc:dd:ee:16" # Cluster interface 2 (bridged)
+  #   cluster_interface_1: "enp2s0f0"  # Interface name for cluster_mac_addr_1
+  #   cluster_interface_2: "enp2s0f1"  # Interface name for cluster_mac_addr_2
   #   schematic_id: "your-schematic-id" talosctl get extensions -n 192.168.1.13 --insecure
   #   mtu: 1500                        # (ADVANCED/OPTIONAL) MTU for external interfaces. DEFAULT: 1500
   #   cluster_mtu: 1500                # (ADVANCED/OPTIONAL) MTU for cluster interfaces. DEFAULT: 1500 (test before using 9000)

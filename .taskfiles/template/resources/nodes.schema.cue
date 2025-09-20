@@ -45,6 +45,18 @@ import (
 	cluster_mac_addr_8?: =~"^([0-9a-f]{2}[:]){5}([0-9a-f]{2})$"
 	cluster_mac_addr_9?: =~"^([0-9a-f]{2}[:]){5}([0-9a-f]{2})$"
 
+	// Cluster network interface names (preferred method - more reliable than MAC addresses)
+	cluster_interface?:   =~"^[a-z0-9]+$"
+	cluster_interface_1?: =~"^[a-z0-9]+$"
+	cluster_interface_2?: =~"^[a-z0-9]+$"
+	cluster_interface_3?: =~"^[a-z0-9]+$"
+	cluster_interface_4?: =~"^[a-z0-9]+$"
+	cluster_interface_5?: =~"^[a-z0-9]+$"
+	cluster_interface_6?: =~"^[a-z0-9]+$"
+	cluster_interface_7?: =~"^[a-z0-9]+$"
+	cluster_interface_8?: =~"^[a-z0-9]+$"
+	cluster_interface_9?: =~"^[a-z0-9]+$"
+
 	schematic_id:       =~"^[a-z0-9]{64}$"
 	mtu?:               >=1450 & <=9000
 	cluster_mtu?:       >=1450 & <=9000
