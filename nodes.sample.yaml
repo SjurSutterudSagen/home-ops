@@ -29,7 +29,7 @@ nodes: []
   #   disk: "/dev/sda"                 # (REQUIRED) Device path or serial number (talosctl get disks -n <ip> --insecure)
   #   mac_addr: "aa:bb:cc:dd:ee:01"    # (REQUIRED) MAC address of external NIC (talosctl get links -n <ip> --insecure)
   #   cluster_mac_addr: "aa:bb:cc:dd:ee:11" # (OPTIONAL) MAC address of cluster NIC (required if cluster_cidr specified)
-  #   schematic_id: "your-schematic-id" # (REQUIRED) Schematic ID from https://factory.talos.dev/
+  #   schematic_id: "your-schematic-id" # (REQUIRED) talosctl get extensions -n 192.168.1.10 --insecure
 
   # Example 2: External bonding mode (redundant external interfaces)
   # - name: "node-2"
@@ -40,7 +40,7 @@ nodes: []
   #   mac_addr_1: "aa:bb:cc:dd:ee:02"  # External NIC 1 (bonded for failover)
   #   mac_addr_2: "aa:bb:cc:dd:ee:03"  # External NIC 2 (bonded for failover)
   #   cluster_mac_addr: "aa:bb:cc:dd:ee:12" # Single cluster interface
-  #   schematic_id: "your-schematic-id"
+  #   schematic_id: "your-schematic-id" talosctl get extensions -n 192.168.1.11 --insecure
 
   # Example 3: Cluster bridging mode (mesh topology)
   # - name: "node-3"
@@ -51,7 +51,7 @@ nodes: []
   #   mac_addr: "aa:bb:cc:dd:ee:04"    # Single external interface
   #   cluster_mac_addr_1: "aa:bb:cc:dd:ee:13" # Cluster interface 1 (direct to node-1)
   #   cluster_mac_addr_2: "aa:bb:cc:dd:ee:14" # Cluster interface 2 (direct to node-2)
-  #   schematic_id: "your-schematic-id"
+  #   schematic_id: "your-schematic-id" talosctl get extensions -n 192.168.1.12 --insecure
 
   # Example 4: Full redundancy mode (bonded external + bridged cluster)
   # - name: "node-4"
@@ -63,7 +63,7 @@ nodes: []
   #   mac_addr_2: "aa:bb:cc:dd:ee:06"  # External NIC 2 (bonded)
   #   cluster_mac_addr_1: "aa:bb:cc:dd:ee:15" # Cluster interface 1 (bridged)
   #   cluster_mac_addr_2: "aa:bb:cc:dd:ee:16" # Cluster interface 2 (bridged)
-  #   schematic_id: "your-schematic-id"
+  #   schematic_id: "your-schematic-id" talosctl get extensions -n 192.168.1.13 --insecure
   #   mtu: 1500                        # (ADVANCED/OPTIONAL) MTU for external interfaces. DEFAULT: 1500
   #   cluster_mtu: 1500                # (ADVANCED/OPTIONAL) MTU for cluster interfaces. DEFAULT: 1500 (test before using 9000)
   #   secureboot: false                # (ADVANCED/OPTIONAL) SecureBoot mode on UEFI platforms
