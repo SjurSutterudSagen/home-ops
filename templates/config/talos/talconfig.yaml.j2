@@ -122,21 +122,48 @@ nodes:
           ip: "#{ cluster_api_addr }#"
         #% endif %#
         #% elif cluster_interfaces %#
-      # Bridge for cluster network - combines multiple direct connections
-      - interface: br-cluster
-        bridge:
-          stp:
-            enabled: false
-          interfaces:
-            #% for interface_name in cluster_interfaces %#
-            - "#{ interface_name }#"
-            #% endfor %#
+      # Partial mesh topology with specific direct cable connections
+      # Node-1 NIC1 ↔ Node-2 NIC1, Node-1 NIC2 ↔ Node-3 NIC1, Node-2 NIC2 ↔ Node-3 NIC2
+        #% set node_id = item.name.split('-')[-1] | int %#
+        #% if node_id == 1 %#
+      # Node-1: Primary cluster network + direct connections to Node-2 and Node-3
+      - interface: "#{ cluster_interfaces[0] }#"  # enp1s0f0 -> Node-2
         addresses:
-          - "#{ item.cluster_address }#/#{ cluster_cidr.split('/') | last }#"
+          - "10.0.0.10/24"  # Primary cluster IP for Kubernetes
+          - "172.16.1.1/30"  # P2P link to Node-2
         mtu: #{ item.cluster_mtu | default(1500, true) }#
-        #% if item.controller %#
         vip:
           ip: "#{ cluster_api_addr }#"
+      - interface: "#{ cluster_interfaces[1] }#"  # enp1s0f1 -> Node-3
+        addresses:
+          - "172.16.2.1/30"  # P2P link to Node-3
+        mtu: #{ item.cluster_mtu | default(1500, true) }#
+        #% elif node_id == 2 %#
+      # Node-2: Primary cluster network + direct connections to Node-1 and Node-3
+      - interface: "#{ cluster_interfaces[0] }#"  # enp1s0f0 -> Node-1
+        addresses:
+          - "10.0.0.11/24"  # Primary cluster IP for Kubernetes
+          - "172.16.1.2/30"  # P2P link to Node-1
+        mtu: #{ item.cluster_mtu | default(1500, true) }#
+        vip:
+          ip: "#{ cluster_api_addr }#"
+      - interface: "#{ cluster_interfaces[1] }#"  # enp1s0f1 -> Node-3
+        addresses:
+          - "172.16.3.1/30"  # P2P link to Node-3
+        mtu: #{ item.cluster_mtu | default(1500, true) }#
+        #% elif node_id == 3 %#
+      # Node-3: Primary cluster network + direct connections to Node-1 and Node-2
+      - interface: "#{ cluster_interfaces[0] }#"  # enp1s0f0 -> Node-1
+        addresses:
+          - "10.0.0.12/24"  # Primary cluster IP for Kubernetes
+          - "172.16.2.2/30"  # P2P link to Node-1
+        mtu: #{ item.cluster_mtu | default(1500, true) }#
+        vip:
+          ip: "#{ cluster_api_addr }#"
+      - interface: "#{ cluster_interfaces[1] }#"  # enp1s0f1 -> Node-2
+        addresses:
+          - "172.16.3.2/30"  # P2P link to Node-2
+        mtu: #{ item.cluster_mtu | default(1500, true) }#
         #% endif %#
         #% elif item.cluster_mac_addr and not cluster_mac_addresses %#
       # Cluster Network Interface (High-speed direct connections) - Single interface mode (legacy)

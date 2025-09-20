@@ -45,7 +45,9 @@ import (
 	cluster_mac_addr_8?: =~"^([0-9a-f]{2}[:]){5}([0-9a-f]{2})$"
 	cluster_mac_addr_9?: =~"^([0-9a-f]{2}[:]){5}([0-9a-f]{2})$"
 
-	// Cluster network interface names (preferred method - more reliable than MAC addresses)
+	// Cluster network interface names (preferred method for mesh topologies)
+	// NOTE: For mesh topology with direct cables, only the FIRST interface is used
+	// to prevent network loops. Additional interfaces are reserved for future use.
 	cluster_interface?:   =~"^[a-z0-9]+$"
 	cluster_interface_1?: =~"^[a-z0-9]+$"
 	cluster_interface_2?: =~"^[a-z0-9]+$"

@@ -42,19 +42,20 @@ nodes:
           - network: "0.0.0.0/0"
             gateway: "192.168.50.1"
         mtu: 1500
-      # Bridge for cluster network - combines multiple direct connections
-      - interface: br-cluster
-        bridge:
-          stp:
-            enabled: false
-          interfaces:
-            - "enp1s0f0"
-            - "enp1s0f1"
+      # Partial mesh topology with specific direct cable connections
+      # Node-1 NIC1 ↔ Node-2 NIC1, Node-1 NIC2 ↔ Node-3 NIC1, Node-2 NIC2 ↔ Node-3 NIC2
+      # Node-1: Primary cluster network + direct connections to Node-2 and Node-3
+      - interface: "enp1s0f0"  # enp1s0f0 -> Node-2
         addresses:
-          - "10.0.0.10/24"
+          - "10.0.0.10/24"  # Primary cluster IP for Kubernetes
+          - "172.16.1.1/30"  # P2P link to Node-2
         mtu: 1500
         vip:
           ip: "10.0.0.100"
+      - interface: "enp1s0f1"  # enp1s0f1 -> Node-3
+        addresses:
+          - "172.16.2.1/30"  # P2P link to Node-3
+        mtu: 1500
   - hostname: "node-2"
     ipAddress: "192.168.50.222"
     installDisk: "/dev/nvme0n1"
@@ -78,19 +79,20 @@ nodes:
           - network: "0.0.0.0/0"
             gateway: "192.168.50.1"
         mtu: 1500
-      # Bridge for cluster network - combines multiple direct connections
-      - interface: br-cluster
-        bridge:
-          stp:
-            enabled: false
-          interfaces:
-            - "enp1s0f0"
-            - "enp1s0f1"
+      # Partial mesh topology with specific direct cable connections
+      # Node-1 NIC1 ↔ Node-2 NIC1, Node-1 NIC2 ↔ Node-3 NIC1, Node-2 NIC2 ↔ Node-3 NIC2
+      # Node-2: Primary cluster network + direct connections to Node-1 and Node-3
+      - interface: "enp1s0f0"  # enp1s0f0 -> Node-1
         addresses:
-          - "10.0.0.11/24"
+          - "10.0.0.11/24"  # Primary cluster IP for Kubernetes
+          - "172.16.1.2/30"  # P2P link to Node-1
         mtu: 1500
         vip:
           ip: "10.0.0.100"
+      - interface: "enp1s0f1"  # enp1s0f1 -> Node-3
+        addresses:
+          - "172.16.3.1/30"  # P2P link to Node-3
+        mtu: 1500
   - hostname: "node-3"
     ipAddress: "192.168.50.223"
     installDisk: "/dev/nvme0n1"
@@ -114,19 +116,20 @@ nodes:
           - network: "0.0.0.0/0"
             gateway: "192.168.50.1"
         mtu: 1500
-      # Bridge for cluster network - combines multiple direct connections
-      - interface: br-cluster
-        bridge:
-          stp:
-            enabled: false
-          interfaces:
-            - "enp1s0f0"
-            - "enp1s0f1"
+      # Partial mesh topology with specific direct cable connections
+      # Node-1 NIC1 ↔ Node-2 NIC1, Node-1 NIC2 ↔ Node-3 NIC1, Node-2 NIC2 ↔ Node-3 NIC2
+      # Node-3: Primary cluster network + direct connections to Node-1 and Node-2
+      - interface: "enp1s0f0"  # enp1s0f0 -> Node-1
         addresses:
-          - "10.0.0.12/24"
+          - "10.0.0.12/24"  # Primary cluster IP for Kubernetes
+          - "172.16.2.2/30"  # P2P link to Node-1
         mtu: 1500
         vip:
           ip: "10.0.0.100"
+      - interface: "enp1s0f1"  # enp1s0f1 -> Node-2
+        addresses:
+          - "172.16.3.2/30"  # P2P link to Node-2
+        mtu: 1500
 
 # Global patches
 patches:
