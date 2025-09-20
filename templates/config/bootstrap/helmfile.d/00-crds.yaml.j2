@@ -14,11 +14,13 @@ helmDefaults:
     - yq eval-all --exit-status 'select(.kind == "CustomResourceDefinition")'
 
 releases:
+#% if cloudflare_enabled %#
   - name: cloudflare-dns
     namespace: network
     chart: oci://ghcr.io/home-operations/charts-mirror/external-dns
     version: 1.19.0
 
+#% endif %#
   - name: gateway-api-crds
     namespace: kube-system
     chart: oci://ghcr.io/wiremind/wiremind-helm-charts/gateway-api-crds

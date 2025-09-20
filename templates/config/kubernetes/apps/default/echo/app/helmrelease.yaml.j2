@@ -16,9 +16,11 @@ spec:
     cleanupOnFail: true
     remediation:
       retries: 3
+#% if cloudflare_enabled %#
   dependsOn:
     - name: cloudflare-tunnel
       namespace: network
+#% endif %#
   values:
     controllers:
       echo:
