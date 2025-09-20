@@ -47,14 +47,22 @@ nodes:
         bridge:
           stp:
             enabled: false
-          deviceSelectors:
-            - hardwareAddr: "a8:b8:e0:06:cc:7c"
-            - hardwareAddr: "a8:b8:e0:06:cc:7d"
+          interfaces:
+            - cluster-nic1
+            - cluster-nic2
         addresses:
           - "10.0.0.10/24"
         mtu: 1500
         vip:
           ip: "10.0.0.100"
+      # Cluster network interface 1
+      - interface: cluster-nic1
+        deviceSelector:
+          hardwareAddr: "a8:b8:e0:06:cc:7c"
+      # Cluster network interface 2
+      - interface: cluster-nic2
+        deviceSelector:
+          hardwareAddr: "a8:b8:e0:06:cc:7d"
   - hostname: "node-2"
     ipAddress: "192.168.50.222"
     installDisk: "/dev/nvme0n1"
@@ -83,14 +91,22 @@ nodes:
         bridge:
           stp:
             enabled: false
-          deviceSelectors:
-            - hardwareAddr: "a8:b8:e0:06:cd:44"
-            - hardwareAddr: "a8:b8:e0:06:cd:45"
+          interfaces:
+            - cluster-nic1
+            - cluster-nic2
         addresses:
           - "10.0.0.11/24"
         mtu: 1500
         vip:
           ip: "10.0.0.100"
+      # Cluster network interface 1
+      - interface: cluster-nic1
+        deviceSelector:
+          hardwareAddr: "a8:b8:e0:06:cd:44"
+      # Cluster network interface 2
+      - interface: cluster-nic2
+        deviceSelector:
+          hardwareAddr: "a8:b8:e0:06:cd:45"
   - hostname: "node-3"
     ipAddress: "192.168.50.223"
     installDisk: "/dev/nvme0n1"
@@ -119,14 +135,22 @@ nodes:
         bridge:
           stp:
             enabled: false
-          deviceSelectors:
-            - hardwareAddr: "a8:b8:e0:06:cc:4c"
-            - hardwareAddr: "a8:b8:e0:06:cc:4d"
+          interfaces:
+            - cluster-nic1
+            - cluster-nic2
         addresses:
           - "10.0.0.12/24"
         mtu: 1500
         vip:
           ip: "10.0.0.100"
+      # Cluster network interface 1
+      - interface: cluster-nic1
+        deviceSelector:
+          hardwareAddr: "a8:b8:e0:06:cc:4c"
+      # Cluster network interface 2
+      - interface: cluster-nic2
+        deviceSelector:
+          hardwareAddr: "a8:b8:e0:06:cc:4d"
 
 # Global patches
 patches:

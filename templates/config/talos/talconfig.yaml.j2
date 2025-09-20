@@ -39,7 +39,7 @@ nodes:
       #% set external_mac_addresses = [] %#
       #% for i in range(1, 10) %#
         #% set mac_attr = 'mac_addr_' ~ i %#
-        #% if item[mac_attr] is defined %#
+        #% if item.get(mac_attr) %#
           #% set _ = external_mac_addresses.append((i, item[mac_attr])) %#
         #% endif %#
       #% endfor %#
@@ -98,7 +98,7 @@ nodes:
         #% set cluster_mac_addresses = [] %#
         #% for i in range(1, 10) %#
           #% set mac_attr = 'cluster_mac_addr_' ~ i %#
-          #% if item[mac_attr] is defined %#
+          #% if item.get(mac_attr) %#
             #% set _ = cluster_mac_addresses.append((i, item[mac_attr])) %#
           #% endif %#
         #% endfor %#
@@ -120,9 +120,9 @@ nodes:
         bridge:
           stp:
             enabled: false
-          deviceSelectors:
+          interfaces:
           #% for i, mac_addr in cluster_mac_addresses %#
-            - hardwareAddr: "#{ mac_addr | lower }#"
+            - cluster-nic#{ i }#
           #% endfor %#
         addresses:
           - "#{ item.cluster_address }#/#{ cluster_cidr.split('/') | last }#"
@@ -131,6 +131,12 @@ nodes:
         vip:
           ip: "#{ cluster_api_addr }#"
         #% endif %#
+      #% for i, mac_addr in cluster_mac_addresses %#
+      # Cluster network interface #{ i }#
+      - interface: cluster-nic#{ i }#
+        deviceSelector:
+          hardwareAddr: "#{ mac_addr | lower }#"
+      #% endfor %#
         #% endif %#
       #% elif item.controller %#
       # VIP on external interface if no cluster network
