@@ -1,0 +1,85 @@
+# Network bonding/bridging configuration for nodes with multiple interfaces
+machine:
+  network:
+    interfaces:
+#% set has_multiple_external_interfaces = false %#
+#% set external_mac_addresses = [] %#
+#% for i in range(1, 10) %#
+  #% set mac_attr = 'mac_addr_' ~ i %#
+  #% if item[mac_attr] is defined %#
+    #% set has_multiple_external_interfaces = true %#
+    #% do external_mac_addresses.append((i, item[mac_attr])) %#
+  #% endif %#
+#% endfor %#
+#% if has_multiple_external_interfaces %#
+      # Bond for external network - combines multiple external interfaces for redundancy
+      - interface: bond-external
+        bond:
+          mode: active-backup  # Failover mode - only one interface active at a time
+          miimon: 100          # Monitor link every 100ms
+          interfaces:
+  #% for i, mac_addr in external_mac_addresses %#
+            - external-nic#{ i }#
+  #% endfor %#
+        #% if node_vlan_tag %#
+        vlans:
+          - vlanId: #{ node_vlan_tag }#
+            dhcp: false
+            addresses:
+              - "#{ item.address }#/#{ node_cidr.split('/') | last }#"
+            routes:
+              - network: "0.0.0.0/0"
+                gateway: "#{ node_default_gateway }#"
+        #% else %#
+        dhcp: false
+        addresses:
+          - "#{ item.address }#/#{ node_cidr.split('/') | last }#"
+        routes:
+          - network: "0.0.0.0/0"
+            gateway: "#{ node_default_gateway }#"
+        mtu: #{ item.mtu | default(1500, true) }#
+        #% endif %#
+
+  #% for i, mac_addr in external_mac_addresses %#
+      # Physical external interface #{ i }# (no IP, bonded)
+      - interface: external-nic#{ i }#
+        deviceSelector:
+          hardwareAddr: "#{ mac_addr | lower }#"
+  #% endfor %#
+#% endif %#
+#% if dual_network_enabled %#
+  #% set has_multiple_cluster_interfaces = false %#
+  #% set cluster_mac_addresses = [] %#
+  #% for i in range(1, 10) %#
+    #% set mac_attr = 'cluster_mac_addr_' ~ i %#
+    #% if item[mac_attr] is defined %#
+      #% set has_multiple_cluster_interfaces = true %#
+      #% do cluster_mac_addresses.append((i, item[mac_attr])) %#
+    #% endif %#
+  #% endfor %#
+  #% if has_multiple_cluster_interfaces %#
+      # Bridge for cluster network - combines multiple direct connections
+      - interface: br-cluster
+        bridge:
+          stp:
+            enabled: false
+          interfaces:
+    #% for i, mac_addr in cluster_mac_addresses %#
+            - cluster-nic#{ i }#
+    #% endfor %#
+        addresses:
+          - "#{ item.cluster_address }#/#{ cluster_cidr.split('/') | last }#"
+        mtu: #{ item.cluster_mtu | default(1500, true) }#
+        #% if item.controller %#
+        vip:
+          ip: "#{ cluster_api_addr }#"
+        #% endif %#
+
+  #% for i, mac_addr in cluster_mac_addresses %#
+      # Physical cluster interface #{ i }# (no IP, bridged)
+      - interface: cluster-nic#{ i }#
+        deviceSelector:
+          hardwareAddr: "#{ mac_addr | lower }#"
+  #% endfor %#
+  #% endif %#
+#% endif %#

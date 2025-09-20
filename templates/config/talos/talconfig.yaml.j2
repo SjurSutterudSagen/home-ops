@@ -36,7 +36,16 @@ nodes:
     talosImageURL: factory.talos.dev/installer#{ "-secureboot" if item.secureboot | default(false, true) }#/#{ item.schematic_id }#
     controlPlane: #{ (item.controller) | string | lower }#
     networkInterfaces:
-      # External/Management Network Interface
+      #% set has_multiple_external_interfaces = false %#
+      #% for i in range(1, 10) %#
+        #% set mac_attr = 'mac_addr_' ~ i %#
+        #% if item[mac_attr] is defined %#
+          #% set has_multiple_external_interfaces = true %#
+          #% break %#
+        #% endif %#
+      #% endfor %#
+      #% if item.mac_addr and not has_multiple_external_interfaces %#
+      # External/Management Network Interface - Single interface mode
       - deviceSelector:
           hardwareAddr: "#{ item.mac_addr | lower }#"
         #% if node_vlan_tag %#
@@ -57,8 +66,20 @@ nodes:
             gateway: "#{ node_default_gateway }#"
         mtu: #{ item.mtu | default(1500, true) }#
         #% endif %#
-      #% if dual_network_enabled and item.cluster_mac_addr %#
-      # Cluster Network Interface (High-speed direct connections)
+      #% elif has_multiple_external_interfaces %#
+      # Note: Bonded mode - external interfaces configured via global bond patch
+      #% endif %#
+      #% if dual_network_enabled %#
+        #% set has_multiple_cluster_interfaces = false %#
+        #% for i in range(1, 10) %#
+          #% set mac_attr = 'cluster_mac_addr_' ~ i %#
+          #% if item[mac_attr] is defined %#
+            #% set has_multiple_cluster_interfaces = true %#
+            #% break %#
+          #% endif %#
+        #% endfor %#
+        #% if item.cluster_mac_addr and not has_multiple_cluster_interfaces %#
+      # Cluster Network Interface (High-speed direct connections) - Single interface mode
       - deviceSelector:
           hardwareAddr: "#{ item.cluster_mac_addr | lower }#"
         dhcp: false
@@ -68,6 +89,9 @@ nodes:
         #% if item.controller %#
         vip:
           ip: "#{ cluster_api_addr }#"
+        #% endif %#
+        #% elif has_multiple_cluster_interfaces %#
+      # Note: Bridge mode - cluster interfaces configured via global bridge patch
         #% endif %#
       #% elif item.controller %#
       # VIP on external interface if no cluster network
