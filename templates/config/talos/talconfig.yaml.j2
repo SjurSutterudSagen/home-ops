@@ -36,12 +36,11 @@ nodes:
     talosImageURL: factory.talos.dev/installer#{ "-secureboot" if item.secureboot | default(false, true) }#/#{ item.schematic_id }#
     controlPlane: #{ (item.controller) | string | lower }#
     networkInterfaces:
-      #% set has_multiple_external_interfaces = false %#
+      #% set has_multiple_external_interfaces = [] %#
       #% for i in range(1, 10) %#
         #% set mac_attr = 'mac_addr_' ~ i %#
         #% if item[mac_attr] is defined %#
-          #% set has_multiple_external_interfaces = true %#
-          #% break %#
+          #% set _ = has_multiple_external_interfaces.append(true) %#
         #% endif %#
       #% endfor %#
       #% if item.mac_addr and not has_multiple_external_interfaces %#
@@ -70,12 +69,11 @@ nodes:
       # Note: Bonded mode - external interfaces configured via global bond patch
       #% endif %#
       #% if dual_network_enabled %#
-        #% set has_multiple_cluster_interfaces = false %#
+        #% set has_multiple_cluster_interfaces = [] %#
         #% for i in range(1, 10) %#
           #% set mac_attr = 'cluster_mac_addr_' ~ i %#
           #% if item[mac_attr] is defined %#
-            #% set has_multiple_cluster_interfaces = true %#
-            #% break %#
+            #% set _ = has_multiple_cluster_interfaces.append(true) %#
           #% endif %#
         #% endfor %#
         #% if item.cluster_mac_addr and not has_multiple_cluster_interfaces %#

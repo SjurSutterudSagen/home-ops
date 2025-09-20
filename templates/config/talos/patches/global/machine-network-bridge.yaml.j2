@@ -8,7 +8,7 @@ machine:
   #% set mac_attr = 'mac_addr_' ~ i %#
   #% if item[mac_attr] is defined %#
     #% set has_multiple_external_interfaces = true %#
-    #% do external_mac_addresses.append((i, item[mac_attr])) %#
+    #% set _ = external_mac_addresses.append((i, item[mac_attr])) %#
   #% endif %#
 #% endfor %#
 #% if has_multiple_external_interfaces %#
@@ -54,7 +54,7 @@ machine:
     #% set mac_attr = 'cluster_mac_addr_' ~ i %#
     #% if item[mac_attr] is defined %#
       #% set has_multiple_cluster_interfaces = true %#
-      #% do cluster_mac_addresses.append((i, item[mac_attr])) %#
+      #% set _ = cluster_mac_addresses.append((i, item[mac_attr])) %#
     #% endif %#
   #% endfor %#
   #% if has_multiple_cluster_interfaces %#

@@ -58,7 +58,8 @@ def cloudflare_tunnel_id(file_path: str = 'cloudflare-tunnel.json') -> str:
         return tunnel_id
 
     except FileNotFoundError:
-        raise FileNotFoundError(f"File not found: {file_path}")
+        # Return empty string if file doesn't exist - template should handle this gracefully
+        return ""
     except json.JSONDecodeError:
         raise ValueError(f"Could not decode JSON file: {file_path}")
     except KeyError as e:
@@ -81,7 +82,8 @@ def cloudflare_tunnel_secret(file_path: str = 'cloudflare-tunnel.json') -> str:
         return base64.b64encode(json_string.encode('utf-8')).decode('utf-8')
 
     except FileNotFoundError:
-        raise FileNotFoundError(f"File not found: {file_path}")
+        # Return empty string if file doesn't exist - template should handle this gracefully
+        return ""
     except json.JSONDecodeError:
         raise ValueError(f"Could not decode JSON file: {file_path}")
     except KeyError as e:
