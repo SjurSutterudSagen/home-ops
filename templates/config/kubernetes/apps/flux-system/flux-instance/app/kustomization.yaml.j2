@@ -6,5 +6,7 @@ resources:
   - ./helmrelease.yaml
   - ./ocirepository.yaml
   - ./secret.sops.yaml
+#% if cloudflare_enabled %#
   - ./httproute.yaml
+#% endif %#
   - ./receiver.yaml
