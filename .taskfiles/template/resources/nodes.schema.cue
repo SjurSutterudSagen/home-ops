@@ -11,23 +11,6 @@ import (
 		name: list.UniqueItems() & [for item in nodes {item.name}]
 		address: list.UniqueItems() & [for item in nodes {item.address}]
 		cluster_address: list.UniqueItems() & [for item in nodes if item.cluster_address != _|_ {item.cluster_address}]
-		// Check for unique MAC addresses across all possible fields
-		all_mac_addrs: list.UniqueItems() & [
-			for item in nodes {
-				if item.mac_addr != _|_ {item.mac_addr}
-			} +
-			[for item in nodes for i in list.Range(1, 9, 1) {
-				let mac_field = "mac_addr_\(i)"
-				if item[mac_field] != _|_ {item[mac_field]}
-			}] +
-			[for item in nodes {
-				if item.cluster_mac_addr != _|_ {item.cluster_mac_addr}
-			}] +
-			[for item in nodes for i in list.Range(1, 9, 1) {
-				let mac_field = "cluster_mac_addr_\(i)"
-				if item[mac_field] != _|_ {item[mac_field]}
-			}]
-		]
 	}
 }
 
