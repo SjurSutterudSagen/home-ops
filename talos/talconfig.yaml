@@ -120,8 +120,8 @@ nodes:
           stp:
             enabled: false
           deviceSelectors:
-            - hardwareAddr: "a8:b8:e0:06:cc:4d"
             - hardwareAddr: "a8:b8:e0:06:cc:4c"
+            - hardwareAddr: "a8:b8:e0:06:cc:4d"
         addresses:
           - "10.0.0.12/24"
         mtu: 1500
