@@ -5,6 +5,7 @@ node_cidr: ""
 
 # -- The network CIDR for cluster nodes (high-speed direct connections).
 # (OPTIONAL) / (e.g. 10.0.0.0/24) / (NOTE: If not set, cluster will use node_cidr for both external and cluster traffic)
+# (NOTE: Supports flexible network configurations - see nodes.sample.yaml for bonding and bridging examples)
 # cluster_cidr: ""
 
 # -- DNS servers to use for the cluster.

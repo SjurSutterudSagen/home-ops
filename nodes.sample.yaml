@@ -1,15 +1,77 @@
 ---
+# Flexible Network Configuration
+# This configuration supports both single and multiple interface modes for BOTH external and cluster networks:
+#
+# EXTERNAL NETWORK INTERFACES:
+# - Single: Use 'mac_addr' for one external interface
+# - Multiple: Use 'mac_addr_1', 'mac_addr_2', etc. for redundant external interfaces
+#   - Creates active-backup bond (failover) - plug cable into any port
+#   - Automatic failover if one cable/port fails
+#
+# CLUSTER NETWORK INTERFACES:
+# - Single: Use 'cluster_mac_addr' for one cluster interface per node
+# - Multiple: Use 'cluster_mac_addr_1', 'cluster_mac_addr_2', etc. for multiple cluster interfaces
+#   - Creates bridge combining all cluster interfaces
+#   - Supports mesh topologies with direct connections between nodes
+#
+# CONFIGURATION EXAMPLES:
+# Traditional setup: mac_addr + cluster_mac_addr
+# Redundant external: mac_addr_1 + mac_addr_2 + cluster_mac_addr
+# Mesh cluster: mac_addr + cluster_mac_addr_1 + cluster_mac_addr_2
+# Full redundancy: mac_addr_1 + mac_addr_2 + cluster_mac_addr_1 + cluster_mac_addr_2
+
 nodes: []
-  # - name: ""                   # (REQUIRED) Name of the node (must match [a-z0-9-\]+)
-  #   address: ""                # (REQUIRED) IP address of the node on external network (must be in the node_cidr)
-  #   cluster_address: ""        # (OPTIONAL) IP address of the node on cluster network (must be in cluster_cidr if specified)
-  #   controller: true           # (REQUIRED) Set to true if this is a controller node
-  #   disk: ""                   # (REQUIRED) Device path or serial number of the disk for this node (talosctl get disks -n <ip> --insecure)
-  #   mac_addr: ""               # (REQUIRED) MAC address of the external network NIC for this node (talosctl get links -n <ip> --insecure)
-  #   cluster_mac_addr: ""       # (OPTIONAL) MAC address of the cluster network NIC (required if cluster_cidr is specified)
-  #   schematic_id: ""           # (REQUIRED) Schematic ID from https://factory.talos.dev/
-  #   mtu: 1500                  # (ADVANCED/OPTIONAL) MTU for the external NIC. DEFAULT: 1500
-  #   cluster_mtu: 1500          # (ADVANCED/OPTIONAL) MTU for the cluster NIC. DEFAULT: 1500 (test before using 9000)
-  #   secureboot: false          # (ADVANCED/OPTIONAL) SecureBoot mode on UEFI platforms. Ref: https://www.talos.dev/latest/talos-guides/install/bare-metal-platforms/secureboot
-  #   encrypt_disk: false        # (ADVANCED/OPTIONAL) TPM-based disk encryption. Ref: https://www.talos.dev/latest/talos-guides/install/bare-metal-platforms/secureboot
+  # Example 1: Traditional single interface mode (basic dual-network setup)
+  # - name: "node-1"
+  #   address: "192.168.1.10"          # (REQUIRED) IP address on external network (must be in node_cidr)
+  #   cluster_address: "10.0.0.10"     # (OPTIONAL) IP address on cluster network (must be in cluster_cidr if specified)
+  #   controller: true                 # (REQUIRED) Set to true if this is a controller node
+  #   disk: "/dev/sda"                 # (REQUIRED) Device path or serial number (talosctl get disks -n <ip> --insecure)
+  #   mac_addr: "aa:bb:cc:dd:ee:01"    # (REQUIRED) MAC address of external NIC (talosctl get links -n <ip> --insecure)
+  #   cluster_mac_addr: "aa:bb:cc:dd:ee:11" # (OPTIONAL) MAC address of cluster NIC (required if cluster_cidr specified)
+  #   schematic_id: "your-schematic-id" # (REQUIRED) Schematic ID from https://factory.talos.dev/
+
+  # Example 2: External bonding mode (redundant external interfaces)
+  # - name: "node-2"
+  #   address: "192.168.1.11"
+  #   cluster_address: "10.0.0.11"
+  #   controller: true
+  #   disk: "/dev/sda"
+  #   mac_addr_1: "aa:bb:cc:dd:ee:02"  # External NIC 1 (bonded for failover)
+  #   mac_addr_2: "aa:bb:cc:dd:ee:03"  # External NIC 2 (bonded for failover)
+  #   cluster_mac_addr: "aa:bb:cc:dd:ee:12" # Single cluster interface
+  #   schematic_id: "your-schematic-id"
+
+  # Example 3: Cluster bridging mode (mesh topology)
+  # - name: "node-3"
+  #   address: "192.168.1.12"
+  #   cluster_address: "10.0.0.12"
+  #   controller: true
+  #   disk: "/dev/sda"
+  #   mac_addr: "aa:bb:cc:dd:ee:04"    # Single external interface
+  #   cluster_mac_addr_1: "aa:bb:cc:dd:ee:13" # Cluster interface 1 (direct to node-1)
+  #   cluster_mac_addr_2: "aa:bb:cc:dd:ee:14" # Cluster interface 2 (direct to node-2)
+  #   schematic_id: "your-schematic-id"
+
+  # Example 4: Full redundancy mode (bonded external + bridged cluster)
+  # - name: "node-4"
+  #   address: "192.168.1.13"
+  #   cluster_address: "10.0.0.13"
+  #   controller: false                # Worker node
+  #   disk: "/dev/sda"
+  #   mac_addr_1: "aa:bb:cc:dd:ee:05"  # External NIC 1 (bonded)
+  #   mac_addr_2: "aa:bb:cc:dd:ee:06"  # External NIC 2 (bonded)
+  #   cluster_mac_addr_1: "aa:bb:cc:dd:ee:15" # Cluster interface 1 (bridged)
+  #   cluster_mac_addr_2: "aa:bb:cc:dd:ee:16" # Cluster interface 2 (bridged)
+  #   schematic_id: "your-schematic-id"
+  #   mtu: 1500                        # (ADVANCED/OPTIONAL) MTU for external interfaces. DEFAULT: 1500
+  #   cluster_mtu: 1500                # (ADVANCED/OPTIONAL) MTU for cluster interfaces. DEFAULT: 1500 (test before using 9000)
+  #   secureboot: false                # (ADVANCED/OPTIONAL) SecureBoot mode on UEFI platforms
+  #   encrypt_disk: false              # (ADVANCED/OPTIONAL) TPM-based disk encryption
   # ...
+
+# ADVANCED OPTIONS (apply to all node examples above):
+# - mtu: 1500                          # MTU for external network interfaces
+# - cluster_mtu: 1500                  # MTU for cluster network interfaces (consider 9000 for high-speed connections)
+# - secureboot: false                  # Enable SecureBoot mode on UEFI platforms
+# - encrypt_disk: false                # Enable TPM-based disk encryption
