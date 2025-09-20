@@ -66,6 +66,10 @@ repository_name: "your-username/my-cluster"
 ```
 
 ### 4. **Configure nodes.yaml**
+
+The template now supports **flexible network configurations** for both external and cluster interfaces:
+
+#### **Traditional Setup (Single Interfaces)**
 ```yaml
 ---
 nodes:
@@ -77,25 +81,54 @@ nodes:
     mac_addr: "aa:bb:cc:dd:ee:01"         # External NIC MAC
     cluster_mac_addr: "aa:bb:cc:dd:ee:11" # Cluster NIC MAC
     schematic_id: "your-schematic-id"
+```
 
-  - name: "node-2"
-    address: "192.168.1.11"
-    cluster_address: "10.0.0.11"
+#### **Redundant External Setup (Bonding)**
+For nodes with multiple ethernet ports, enable automatic failover:
+```yaml
+  - name: "node-1"
+    address: "192.168.1.10"
+    cluster_address: "10.0.0.10"
     controller: true
     disk: "/dev/sda"
-    mac_addr: "aa:bb:cc:dd:ee:02"
-    cluster_mac_addr: "aa:bb:cc:dd:ee:12"
-    schematic_id: "your-schematic-id"
-
-  - name: "node-3"
-    address: "192.168.1.12"
-    cluster_address: "10.0.0.12"
-    controller: true
-    disk: "/dev/sda"
-    mac_addr: "aa:bb:cc:dd:ee:03"
-    cluster_mac_addr: "aa:bb:cc:dd:ee:13"
+    mac_addr_1: "aa:bb:cc:dd:ee:01"       # External NIC 1 (bonded)
+    mac_addr_2: "aa:bb:cc:dd:ee:02"       # External NIC 2 (bonded)
+    cluster_mac_addr: "aa:bb:cc:dd:ee:11" # Cluster NIC MAC
     schematic_id: "your-schematic-id"
 ```
+**Benefits**: Plug external cable into either port, automatic failover if one fails.
+
+#### **Mesh Cluster Setup (Bridging)**
+For direct node-to-node connections:
+```yaml
+  - name: "node-1"
+    address: "192.168.1.10"
+    cluster_address: "10.0.0.10"
+    controller: true
+    disk: "/dev/sda"
+    mac_addr: "aa:bb:cc:dd:ee:01"         # External NIC MAC
+    cluster_mac_addr_1: "aa:bb:cc:dd:ee:11" # Cluster NIC 1 (to node-2)
+    cluster_mac_addr_2: "aa:bb:cc:dd:ee:12" # Cluster NIC 2 (to node-3)
+    schematic_id: "your-schematic-id"
+```
+**Benefits**: Direct high-speed connections between nodes, mesh topology.
+
+#### **Full Redundancy Setup**
+Combine bonding + bridging for maximum reliability:
+```yaml
+  - name: "node-1"
+    address: "192.168.1.10"
+    cluster_address: "10.0.0.10"
+    controller: true
+    disk: "/dev/sda"
+    mac_addr_1: "aa:bb:cc:dd:ee:01"       # External NIC 1 (bonded)
+    mac_addr_2: "aa:bb:cc:dd:ee:02"       # External NIC 2 (bonded)
+    cluster_mac_addr_1: "aa:bb:cc:dd:ee:11" # Cluster NIC 1 (bridged)
+    cluster_mac_addr_2: "aa:bb:cc:dd:ee:12" # Cluster NIC 2 (bridged)
+    schematic_id: "your-schematic-id"
+```
+
+> **Note**: See `nodes.sample.yaml` for detailed examples and `DUAL-NETWORK-SETUP.md` for advanced configurations.
 
 ### 5. **Generate and Deploy**
 ```bash

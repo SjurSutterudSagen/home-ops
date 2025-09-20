@@ -2,6 +2,8 @@
 
 This guide explains how to configure the cluster template for a dual-network setup with high-speed direct connections between nodes for cluster traffic and separate external network interfaces for internet access.
 
+**NEW**: The template now supports **flexible network configurations** including interface bonding, bridging, and mesh topologies.
+
 ## Overview
 
 In a dual-network configuration:
@@ -13,6 +15,8 @@ In a dual-network configuration:
 1. **Performance**: High-speed cluster network improves etcd performance, pod-to-pod communication, and storage replication
 2. **Isolation**: Separates cluster traffic from external traffic for better security and performance
 3. **Scalability**: Reduces congestion on the external network by offloading cluster communication
+4. **Redundancy**: Support for bonded external interfaces and bridged cluster interfaces
+5. **Flexibility**: Mix and match single/multiple interfaces per node based on hardware capabilities
 
 ## Network Planning
 
@@ -82,6 +86,9 @@ repository_name: "your-username/your-repo"
 
 ### nodes.yaml
 
+The template supports **multiple network interface configurations**:
+
+#### **Traditional Mode (Single Interfaces)**
 ```yaml
 ---
 nodes:
@@ -91,47 +98,90 @@ nodes:
     controller: true
     disk: "/dev/sda"
     mac_addr: "aa:bb:cc:dd:ee:01"         # External NIC MAC
-    cluster_mac_addr: "aa:bb:cc:dd:ee:11"  # Cluster NIC MAC
+    cluster_mac_addr: "aa:bb:cc:dd:ee:11" # Cluster NIC MAC
     schematic_id: "your-schematic-id"
     mtu: 1500                             # External network MTU
-    cluster_mtu: 1500                     # Cluster network MTU (start with 1500, test before using 9000)
+    cluster_mtu: 1500                     # Cluster network MTU
+```
 
+#### **External Bonding Mode (Redundant External)**
+Active-backup bonding for external interface redundancy:
+```yaml
   - name: "node-2"
     address: "192.168.1.11"
     cluster_address: "10.0.0.11"
     controller: true
     disk: "/dev/sda"
-    mac_addr: "aa:bb:cc:dd:ee:02"
-    cluster_mac_addr: "aa:bb:cc:dd:ee:12"
+    mac_addr_1: "aa:bb:cc:dd:ee:02"       # External NIC 1 (bonded)
+    mac_addr_2: "aa:bb:cc:dd:ee:03"       # External NIC 2 (bonded)
+    cluster_mac_addr: "aa:bb:cc:dd:ee:12" # Single cluster NIC
     schematic_id: "your-schematic-id"
-    mtu: 1500
-    cluster_mtu: 1500
+```
+**Benefits**: Plug external cable into either port, automatic failover.
 
+#### **Cluster Bridging Mode (Mesh Topology)**
+Bridge multiple cluster interfaces for direct node connections:
+```yaml
   - name: "node-3"
     address: "192.168.1.12"
     cluster_address: "10.0.0.12"
     controller: true
     disk: "/dev/sda"
-    mac_addr: "aa:bb:cc:dd:ee:03"
-    cluster_mac_addr: "aa:bb:cc:dd:ee:13"
+    mac_addr: "aa:bb:cc:dd:ee:04"         # Single external NIC
+    cluster_mac_addr_1: "aa:bb:cc:dd:ee:13" # Cluster NIC 1 (to node-1)
+    cluster_mac_addr_2: "aa:bb:cc:dd:ee:14" # Cluster NIC 2 (to node-2)
     schematic_id: "your-schematic-id"
-    mtu: 1500
-    cluster_mtu: 1500
 ```
+**Benefits**: Direct high-speed connections, mesh topology, no cluster switch needed.
+
+#### **Full Redundancy Mode (Bonding + Bridging)**
+Maximum redundancy for both networks:
+```yaml
+  - name: "node-4"
+    address: "192.168.1.13"
+    cluster_address: "10.0.0.13"
+    controller: false                     # Worker node
+    disk: "/dev/sda"
+    mac_addr_1: "aa:bb:cc:dd:ee:05"       # External NIC 1 (bonded)
+    mac_addr_2: "aa:bb:cc:dd:ee:06"       # External NIC 2 (bonded)
+    cluster_mac_addr_1: "aa:bb:cc:dd:ee:15" # Cluster NIC 1 (bridged)
+    cluster_mac_addr_2: "aa:bb:cc:dd:ee:16" # Cluster NIC 2 (bridged)
+    schematic_id: "your-schematic-id"
+```
+
+> **Auto-Detection**: The template automatically detects which mode to use based on the MAC address fields you provide. See `nodes.sample.yaml` for more examples.
 
 ## Hardware Setup
 
-### Physical Connections
+### Physical Connection Options
 
-For your 3-node setup with direct connections:
+The template supports multiple physical topologies:
 
-1. **External Network**: Each node connects to your main switch/router via ethernet
-2. **Cluster Network**: Direct high-speed connections between nodes:
-   - Node 1 ↔ Node 2 (direct cable)
-   - Node 1 ↔ Node 3 (direct cable)
-   - Node 2 ↔ Node 3 (direct cable)
+#### **1. Traditional Dual-Network (Switch-based)**
+- **External Network**: Each node connects to your main router/switch
+- **Cluster Network**: Each node connects to a dedicated high-speed switch
+- **Configuration**: Use single MAC addresses (`mac_addr`, `cluster_mac_addr`)
 
-Alternatively, you can use a dedicated high-speed switch for the cluster network.
+#### **2. Mesh Topology (Direct Connections)**
+- **External Network**: Each node connects to your main router/switch
+- **Cluster Network**: Direct point-to-point connections between nodes:
+  - Node 1 ↔ Node 2 (direct cable)
+  - Node 1 ↔ Node 3 (direct cable)
+  - Node 2 ↔ Node 3 (direct cable)
+- **Configuration**: Use multiple cluster MAC addresses (`cluster_mac_addr_1`, `cluster_mac_addr_2`)
+- **Benefits**: No cluster switch needed, maximum performance, lower latency
+
+#### **3. Redundant External (Bonded)**
+- **External Network**: Each node uses 2+ interfaces bonded for failover
+- **Cluster Network**: Single or multiple cluster interfaces
+- **Configuration**: Use multiple external MAC addresses (`mac_addr_1`, `mac_addr_2`)
+- **Benefits**: Cable in any external port, automatic failover
+
+#### **4. Full Redundancy (Bonded + Bridged)**
+- **External Network**: Bonded interfaces for failover
+- **Cluster Network**: Multiple interfaces bridged for performance/redundancy
+- **Configuration**: Use both multiple external and cluster MAC addresses
+- **Benefits**: Maximum redundancy and performance
 
 ### Network Interface Identification
 
@@ -145,10 +195,77 @@ talosctl get links --nodes <node-ip> --insecure
 # Use these MAC addresses in your nodes.yaml configuration
 ```
 
+### Recommended Physical Setups
+
+#### **For 2-port nodes (most common):**
+- **Port 1**: External network (to router/switch)
+- **Port 2**: Cluster network (direct connection or cluster switch)
+
+#### **For 4-port nodes (high-end):**
+- **Ports 1-2**: External network (bonded for redundancy)
+- **Ports 3-4**: Cluster network (bridged for performance/mesh)
+
 ## MTU Considerations
 
 - **External Network**: Standard 1500 MTU for compatibility
 - **Cluster Network**: Consider jumbo frames (9000 MTU) for better performance on high-speed connections
+
+## Flexible Network Configuration Details
+
+### Automatic Detection Logic
+
+The template automatically detects your configuration based on MAC address fields:
+
+- **Single External**: `mac_addr` → Standard interface configuration
+- **Bonded External**: `mac_addr_1`, `mac_addr_2`, etc. → Active-backup bond with failover
+- **Single Cluster**: `cluster_mac_addr` → Standard cluster interface
+- **Bridged Cluster**: `cluster_mac_addr_1`, `cluster_mac_addr_2`, etc. → Bridge for mesh topology
+
+### Bonding vs Bridging
+
+#### **External Network Bonding (Active-Backup)**
+- **Purpose**: Failover and redundancy
+- **Mode**: Only one interface active at a time
+- **Benefit**: Plug cable into any port, automatic failover if link fails
+- **Use Case**: Ensure external connectivity even if one ethernet port/cable fails
+
+#### **Cluster Network Bridging**
+- **Purpose**: Aggregate multiple direct connections
+- **Mode**: All interfaces active simultaneously
+- **Benefit**: Higher bandwidth, mesh topology support
+- **Use Case**: Direct node-to-node connections without requiring switches
+
+### Mixed Configurations
+
+You can mix different configurations within the same cluster:
+
+```yaml
+nodes:
+  # Controller with full redundancy
+  - name: "controller-1"
+    mac_addr_1: "..." # Bonded external
+    mac_addr_2: "..."
+    cluster_mac_addr_1: "..." # Bridged cluster
+    cluster_mac_addr_2: "..."
+
+  # Worker with traditional setup
+  - name: "worker-1"
+    mac_addr: "..." # Single external
+    cluster_mac_addr: "..." # Single cluster
+
+  # Worker with external bonding only
+  - name: "worker-2"
+    mac_addr_1: "..." # Bonded external
+    mac_addr_2: "..."
+    cluster_mac_addr: "..." # Single cluster
+```
+
+### Network Interface Naming
+
+The template creates predictable interface names:
+- **External Bond**: `bond-external` (combines `external-nic1`, `external-nic2`, etc.)
+- **Cluster Bridge**: `br-cluster` (combines `cluster-nic1`, `cluster-nic2`, etc.)
+- **Physical Interfaces**: `external-nic1`, `cluster-nic1`, etc.
 
 ## DNS and Service Discovery
 
@@ -175,6 +292,8 @@ kubectl → External Network → Load Balancer → Cluster Network → Kubernete
 2. **Routing**: Verify routes are correctly configured on both networks
 3. **MTU**: Ensure MTU settings are consistent across the cluster network
 4. **Firewall**: Verify cluster network allows all required Kubernetes ports
+5. **Bonding Issues**: Check if bonded interfaces are correctly detecting link status
+6. **Bridge Issues**: Verify all physical interfaces are properly added to bridges
 
 ### Verification Commands
 
@@ -190,6 +309,54 @@ cilium status
 
 # Check pod-to-pod connectivity
 kubectl exec -it <pod-name> -- ping <other-pod-ip>
+
+# Check bonding status (if using bonded external interfaces)
+talosctl read /proc/net/bonding/bond-external --nodes <node-ip>
+
+# Check bridge status (if using bridged cluster interfaces)
+talosctl read /sys/class/net/br-cluster/bridge/ --nodes <node-ip>
+
+# Verify interface configurations
+talosctl get addresses --nodes <node-ip>
+```
+
+### Troubleshooting Bonding Issues
+
+```bash
+# Check bond status
+talosctl read /proc/net/bonding/bond-external --nodes <node-ip>
+
+# Should show active slave and backup slave(s)
+# Example output:
+# Bonding Mode: fault-tolerance (active-backup)
+# Primary Slave: external-nic1 (primary_reselect always)
+# Currently Active Slave: external-nic1
+# Slave Interface: external-nic1
+# MII Status: up
+# Slave Interface: external-nic2
+# MII Status: up
+
+# Test failover by disconnecting active interface cable
+# Backup interface should become active automatically
+```
+
+### Troubleshooting Bridge Issues
+
+```bash
+# Check bridge interface status
+talosctl read /sys/class/net/br-cluster/bridge/ --nodes <node-ip>
+
+# List bridge members
+talosctl exec --nodes <node-ip> -- bridge link show
+
+# Should show cluster-nic1, cluster-nic2, etc. as bridge members
+# Example output:
+# 3: cluster-nic1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 master br-cluster
+# 4: cluster-nic2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 master br-cluster
+
+# Check bridge forwarding
+talosctl read /sys/class/net/br-cluster/bridge/stp_state --nodes <node-ip>
+# Should return: 0 (STP disabled as configured)
 ```
 
 ## Performance Tuning

@@ -18,6 +18,7 @@ A Kubernetes cluster deployed with [Talos Linux](https://github.com/siderolabs/t
 - **Optional:** Cloudflare account with domain for external access (can be added later).
 - **Included components:** [flux](https://github.com/fluxcd/flux2), [cilium](https://github.com/cilium/cilium), [cert-manager](https://github.com/cert-manager/cert-manager), [spegel](https://github.com/spegel-org/spegel), [reloader](https://github.com/stakater/Reloader), and optionally [external-dns](https://github.com/kubernetes-sigs/external-dns) and [cloudflared](https://github.com/cloudflare/cloudflared).
 - **Dual-network support:** Optional configuration for high-speed cluster networks with separate external access.
+- **Flexible networking:** Support for interface bonding, bridging, and mesh topologies for maximum redundancy and performance.
 
 **Other features include:**
 
@@ -29,7 +30,7 @@ A Kubernetes cluster deployed with [Talos Linux](https://github.com/siderolabs/t
 Does this sound cool to you? If so, continue to read on! 👇
 
 > [!TIP]
-> **High-Performance Setup:** If you have high-speed direct connections between your nodes, check out the [Dual Network Setup Guide](./DUAL-NETWORK-SETUP.md) for optimal performance configuration.
+> **High-Performance Setup:** If you have high-speed direct connections between your nodes, check out the [Dual Network Setup Guide](./DUAL-NETWORK-SETUP.md) for optimal performance configuration with flexible bonding/bridging options.
 
 > [!TIP]
 > **Local-Only Setup:** Want to run locally without external Cloudflare access? Check out the [Local Setup Guide](./LOCAL-SETUP-GUIDE.md) for a simplified configuration.
