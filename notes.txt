@@ -1,0 +1,4 @@
+https://factory.talos.dev/?arch=amd64&bootloader=auto&cmdline-set=true&extensions=-&extensions=siderolabs%2Fi915&extensions=siderolabs%2Fintel-ucode&extensions=siderolabs%2Fmei&extensions=siderolabs%2Futil-linux-tools&platform=metal&target=metal&version=1.12.6
+
+# direct node networking example
+https://github.com/gavinmcfall/home-ops
