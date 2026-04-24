@@ -1,0 +1,100 @@
+---
+clusterName: kubernetes
+
+talosVersion: "${talosVersion}"
+kubernetesVersion: "${kubernetesVersion}"
+
+endpoint: https://192.168.50.230:6443
+additionalApiServerCertSans: &sans
+  - "127.0.0.1"
+  - "192.168.50.230"
+additionalMachineCertSans: *sans
+
+clusterPodNets: ["10.42.0.0/16"]
+clusterSvcNets: ["10.43.0.0/16"]
+
+# Disable built-in CNI to use Cilium
+cniConfig:
+  name: none
+
+nodes:
+  - hostname: "homelab-k8s-c01"
+    ipAddress: "192.168.50.221"
+    installDiskSelector:
+      serial: "50026B73836CFDA2"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/installer/0c0bed2821a0bd261717f4ca8c32499d6c277aad2f43c404d5bffec7c97656f0
+    controlPlane: true
+    networkInterfaces:
+      - deviceSelector:
+          hardwareAddr: "a8:b8:e0:06:cc:7e"
+        dhcp: false
+        addresses:
+          - "192.168.50.221/24"
+        routes:
+          - gateway: "192.168.50.1"
+            network: 0.0.0.0/0
+        mtu: 1500
+        vip:
+          ip: "192.168.50.230"
+    patches:
+      - "@./patches/homelab-k8s-c01/machine-network-direct.yaml"
+  - hostname: "homelab-k8s-c02"
+    ipAddress: "192.168.50.222"
+    installDiskSelector:
+      serial: "50026B73836CFD69"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/installer/0c0bed2821a0bd261717f4ca8c32499d6c277aad2f43c404d5bffec7c97656f0
+    controlPlane: true
+    networkInterfaces:
+      - deviceSelector:
+          hardwareAddr: "a8:b8:e0:06:cd:46"
+        dhcp: false
+        addresses:
+          - "192.168.50.222/24"
+        routes:
+          - gateway: "192.168.50.1"
+            network: 0.0.0.0/0
+        mtu: 1500
+        vip:
+          ip: "192.168.50.230"
+    patches:
+      - "@./patches/homelab-k8s-c02/machine-network-direct.yaml"
+  - hostname: "homelab-k8s-c03"
+    ipAddress: "192.168.50.223"
+    installDiskSelector:
+      serial: "50026B73836CFDC4"
+    machineSpec:
+      secureboot: false
+    talosImageURL: factory.talos.dev/installer/0c0bed2821a0bd261717f4ca8c32499d6c277aad2f43c404d5bffec7c97656f0
+    controlPlane: true
+    networkInterfaces:
+      - deviceSelector:
+          hardwareAddr: "a8:b8:e0:06:cc:4e"
+        dhcp: false
+        addresses:
+          - "192.168.50.223/24"
+        routes:
+          - gateway: "192.168.50.1"
+            network: 0.0.0.0/0
+        mtu: 1500
+        vip:
+          ip: "192.168.50.230"
+    patches:
+      - "@./patches/homelab-k8s-c03/machine-network-direct.yaml"
+
+# Global patches
+patches:
+  - "@./patches/global/machine-files.yaml"
+  - "@./patches/global/machine-kubelet.yaml"
+  - "@./patches/global/machine-network.yaml"
+  - "@./patches/global/machine-sysctls.yaml"
+  - "@./patches/global/machine-time.yaml"
+
+# Controller patches
+controlPlane:
+  patches:
+    - "@./patches/controller/cluster.yaml"
+
