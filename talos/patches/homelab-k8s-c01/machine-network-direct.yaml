@@ -1,0 +1,26 @@
+machine:
+  network:
+    interfaces:
+      - interface: lo
+        addresses:
+          - "10.1.1.1/32"
+      - deviceSelector:
+          hardwareAddr: "a8:b8:e0:06:cc:7c"   # direct link → c02
+        dhcp: false
+        addresses:
+          - "10.1.0.1/30"
+        mtu: 9000
+        routes:
+          - network: "10.1.1.2/32"
+            gateway: "10.1.0.2"
+            metric: 100
+      - deviceSelector:
+          hardwareAddr: "a8:b8:e0:06:cc:7d"   # direct link → c03
+        dhcp: false
+        addresses:
+          - "10.1.0.5/30"
+        mtu: 9000
+        routes:
+          - network: "10.1.1.3/32"
+            gateway: "10.1.0.6"
+            metric: 100
