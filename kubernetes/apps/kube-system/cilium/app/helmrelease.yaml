@@ -9,7 +9,7 @@ spec:
     name: cilium
   interval: 1h
   values:
-    autoDirectNodeRoutes: true
+    autoDirectNodeRoutes: false
     bpf:
       masquerade: true
       # Ref: https://github.com/siderolabs/talos/issues/10002
@@ -21,8 +21,9 @@ spec:
       automount:
         enabled: false
       hostRoot: /sys/fs/cgroup
-    # NOTE: devices might need to be set if you have more than one active NIC on your hosts
-    # devices: eno+ eth+
+    devices: enp+
+    extraConfig:
+      direct-routing-device: "enp2s0"
     dashboards:
       enabled: true
     endpointRoutes:
@@ -35,7 +36,6 @@ spec:
       enabled: false
     ipam:
       mode: kubernetes
-    ipv4NativeRoutingCIDR: "10.42.0.0/16"
     k8sServiceHost: 127.0.0.1
     k8sServicePort: 7445
     kubeProxyReplacement: true
@@ -44,7 +44,7 @@ spec:
       enabled: true
     loadBalancer:
       algorithm: maglev
-      mode: "dsr"
+      mode: snat
     localRedirectPolicies:
       enabled: true
     operator:
@@ -62,7 +62,6 @@ spec:
         enabled: true
         trustCRDsExist: true
     rollOutCiliumPods: true
-    routingMode: native
     securityContext:
       capabilities:
         ciliumAgent:
