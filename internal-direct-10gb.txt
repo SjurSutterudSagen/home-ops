@@ -1,0 +1,23 @@
+node 1
+c01-1:
+    mac: a8:b8:e0:06:cc:7c
+    conntects_to: c02-01
+c01-2:
+    mac: a8:b8:e0:06:cc:7d
+    conntects_to: c03-01
+
+node 2
+c02-1:
+    mac: a8:b8:e0:06:cd:44
+    conntects_to: c01-01
+c02-2:
+    mac: a8:b8:e0:06:cd:45
+    conntects_to: c03-02
+
+node 3
+c03-1:
+    mac: a8:b8:e0:06:cc:4c
+    conntects_to: c01-02
+c03-2:
+    mac: a8:b8:e0:06:cc:4d
+    conntects_to: c02-02
